@@ -125,10 +125,35 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'IBM Pl
 .install-text{font-size:13px;color:var(--text);flex:1;line-height:1.4}
 .install-btn{background:var(--grc);color:#fff;border:none;border-radius:var(--radius-sm);padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;flex-shrink:0}
 .badge-learned{display:inline-flex;align-items:center;gap:5px;background:#0a1a10;border:0.5px solid var(--iam);border-radius:99px;padding:5px 12px;font-size:12px;color:var(--iam-light);margin-bottom:10px}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+.setup-card{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:24px;width:100%;max-width:380px}
+.setup-title{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;color:var(--text);margin-bottom:6px}
+.setup-sub{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px}
+.setup-label{font-size:12px;color:var(--text3);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.setup-input{width:100%;background:var(--bg3);border:0.5px solid var(--border2);color:var(--text);padding:12px 14px;border-radius:var(--radius-sm);font-family:'IBM Plex Mono',monospace;font-size:13px;margin-bottom:6px}
+.setup-input:focus{outline:none;border-color:var(--grc)}
+.setup-hint{font-size:12px;color:var(--text3);margin-bottom:20px;line-height:1.5}
+.setup-hint a{color:var(--grc-light);text-decoration:none}
+.setup-err{color:var(--pentest-light);font-size:12px;margin-bottom:10px;display:none}
 </style>
 </head>
 <body>
 <div class="app">
+  <div id="apiOverlay" class="overlay" style="display:none">
+    <div class="setup-card">
+      <div class="setup-title">🔐 Configuration</div>
+      <div class="setup-sub">CyberAcademy utilise l'IA Claude pour générer vos notions. Une clé API Anthropic est nécessaire.</div>
+      <div class="setup-label">Votre clé API Anthropic</div>
+      <input class="setup-input" type="password" id="apiInput" placeholder="sk-ant-api03-..." autocomplete="off" autocorrect="off" spellcheck="false">
+      <div class="setup-hint">
+        Obtenez votre clé gratuite sur <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a><br>
+        → API Keys → Create Key<br>
+        🔒 La clé est stockée uniquement sur votre appareil.
+      </div>
+      <div class="setup-err" id="apiErr">❌ Clé invalide. Vérifiez et réessayez.</div>
+      <button class="btn btn-primary" style="width:100%;padding:14px;font-size:15px" onclick="saveAPIKey()">Démarrer →</button>
+    </div>
+  </div>
   <div class="header">
     <div class="logo">
       <div class="logo-icon">🔐</div>
@@ -271,6 +296,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'IBM Pl
           <div class="settings-sub">CyberAcademy PWA v1.0</div>
         </div>
       </div>
+      <div class="settings-row" style="padding-top:12px">
+        <div>
+          <div class="settings-label">Clé API</div>
+          <div class="settings-sub" id="apiStatus">Configurée ✓</div>
+        </div>
+        <button class="btn btn-outline" style="font-size:12px;padding:6px 10px" onclick="S.apiKey='';save();showAPISetup()">Modifier</button>
+      </div>
     </div>
 
     <button class="btn btn-primary" onclick="testNotif()" style="width:100%;margin-bottom:10px;padding:14px;font-size:14px">🔔 Tester un rappel</button>
@@ -295,6 +327,15 @@ let S = {
 };
 
 const DB_KEY = 'ca_state_v1';
+
+function showAPISetup(){document.getElementById('apiOverlay').style.display='flex';}
+function saveAPIKey(){
+  const k=document.getElementById('apiInput').value.trim();
+  if(!k.startsWith('sk-ant-')){document.getElementById('apiErr').style.display='block';return;}
+  S.apiKey=k;save();
+  document.getElementById('apiOverlay').style.display='none';
+  generate();
+}
 
 function load(){
   try{const d=localStorage.getItem(DB_KEY);if(d)S={...S,...JSON.parse(d)};}catch(e){}
@@ -369,7 +410,7 @@ async function generate(){
   try{
     const resp=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','x-api-key':S.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({
         model:'claude-sonnet-4-20250514',
         max_tokens:1000,
@@ -589,7 +630,7 @@ if('serviceWorker'in navigator){
 load();
 setPill('Pentest');
 document.getElementById('dateStr').textContent=new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long'});
-generate();
+if(!S.apiKey) showAPISetup(); else generate();
 </script>
 </body>
 </html>
