@@ -419,12 +419,14 @@ async function generate(){
       })
     });
     const data=await resp.json();
+    if(data.error){throw new Error('API: '+data.error.message);}
     const txt=data.content.map(i=>i.text||'').join('');
     const c=JSON.parse(txt.replace(/```json|```/g,'').trim());
     S.concept={...c,cat};
     renderConcept(c,cat);
   }catch(e){
-    document.getElementById('conceptArea').innerHTML=`<div class="error">❌ Erreur de génération. Vérifiez votre connexion internet.</div><div class="btn-row"><button class="btn btn-primary" onclick="generate()">↻ Réessayer</button></div>`;
+    const msg = e && e.message ? e.message : String(e);
+    document.getElementById('conceptArea').innerHTML=`<div class="error">❌ ${msg}</div><div class="btn-row"><button class="btn btn-primary" onclick="generate()">↻ Réessayer</button><button class="btn btn-outline" onclick="S.apiKey='';save();showAPISetup()">Changer la clé</button></div>`;
   }
   document.getElementById('regenBtn').disabled=false;
 }
