@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f0f0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CyberAcademy">
+<meta name="description" content="Apprenez chaque jour une nouvelle notion en cybersécurité">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>CyberAcademy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0f0f0f;--bg2:#161616;--bg3:#1e1e1e;--bg4:#252525;
+  --text:#f0f0f0;--text2:#a0a0a0;--text3:#606060;
+  --border:#2a2a2a;--border2:#333;
+  --pentest:#E24B4A;--pentest-bg:#1a0a0a;--pentest-light:#f09595;
+  --iam:#1D9E75;--iam-bg:#0a1a14;--iam-light:#5DCAA5;
+  --grc:#378ADD;--grc-bg:#0a1020;--grc-light:#85B7EB;
+  --sys:#BA7517;--sys-bg:#1a1200;--sys-light:#EF9F27;
+  --radius:12px;--radius-sm:8px;--radius-lg:16px;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;overflow:hidden}
+.app{display:flex;flex-direction:column;height:100%;padding-top:var(--safe-top)}
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;background:var(--bg);border-bottom:0.5px solid var(--border);flex-shrink:0}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:34px;height:34px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo-text{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:var(--text);letter-spacing:-0.3px}
+.logo-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:0.3px}
+.streak{display:flex;align-items:center;gap:6px;background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:6px 10px}
+.streak-num{font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;color:var(--text)}
+.streak-label{font-size:11px;color:var(--text3)}
+/* Nav */
+.nav{display:flex;background:var(--bg);border-bottom:0.5px solid var(--border);padding:0 12px;flex-shrink:0;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav-btn{flex:1;min-width:70px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;border:none;background:transparent;color:var(--text3);font-size:10px;font-family:'IBM Plex Mono',monospace;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;white-space:nowrap}
+.nav-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.nav-btn.active{color:var(--text);border-bottom-color:var(--text)}
+/* Scroll area */
+.scroll{flex:1;overflow-y:auto;padding:16px;padding-bottom:calc(16px + var(--safe-bottom));scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.stat{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 6px;text-align:center}
+.stat-num{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;line-height:1.1}
+.stat-label{font-size:10px;color:var(--text3);margin-top:3px}
+/* Category tabs */
+.cat-tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.cat-tabs::-webkit-scrollbar{display:none}
+.cat-tab{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:99px;border:0.5px solid var(--border);background:var(--bg2);color:var(--text2);font-size:13px;font-family:'IBM Plex Mono',monospace;cursor:pointer;white-space:nowrap;transition:all 0.15s;flex-shrink:0}
+.cat-tab .dot{width:7px;height:7px;border-radius:50%}
+.cat-tab.active{color:var(--text);border-color:var(--border2);background:var(--bg3)}
+.cat-tab.active[data-cat="Pentest"]{background:var(--pentest-bg);border-color:var(--pentest);color:var(--pentest-light)}
+.cat-tab.active[data-cat="IAM"]{background:var(--iam-bg);border-color:var(--iam);color:var(--iam-light)}
+.cat-tab.active[data-cat="GRC"]{background:var(--grc-bg);border-color:var(--grc);color:var(--grc-light)}
+.cat-tab.active[data-cat="Système"]{background:var(--sys-bg);border-color:var(--sys);color:var(--sys-light)}
+/* Card */
+.card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:14px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cat-pill{padding:4px 10px;border-radius:99px;font-size:11px;font-family:'IBM Plex Mono',monospace;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;border:0.5px solid}
+.date-str{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3)}
+.concept-title{font-size:20px;font-weight:500;color:var(--text);line-height:1.3;margin-bottom:10px}
+.concept-desc{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:14px}
+.concept-desc code{font-family:'IBM Plex Mono',monospace;font-size:12px;background:var(--bg4);padding:2px 6px;border-radius:4px;color:var(--text)}
+.divider{border:none;border-top:0.5px solid var(--border);margin:12px 0}
+.section-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.section{background:var(--bg3);border-radius:var(--radius-sm);padding:10px}
+.section-label{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px}
+.section-text{font-size:13px;color:var(--text);line-height:1.5}
+.section-text code{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg4);padding:1px 5px;border-radius:3px;color:var(--text)}
+/* Quiz */
+.quiz{background:var(--bg3);border-radius:var(--radius-sm);padding:12px;margin-bottom:14px}
+.quiz-q{font-size:13px;font-weight:500;color:var(--text);margin-bottom:10px;line-height:1.4}
+.quiz-opts{display:flex;flex-direction:column;gap:6px}
+.quiz-opt{padding:10px 12px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg2);color:var(--text2);font-size:13px;text-align:left;cursor:pointer;transition:all 0.15s;font-family:'IBM Plex Sans',sans-serif;line-height:1.4}
+.quiz-opt:active{transform:scale(0.98)}
+.quiz-opt.correct{background:#0a1a10;border-color:var(--iam);color:var(--iam-light)}
+.quiz-opt.wrong{background:#1a0808;border-color:var(--pentest);color:var(--pentest-light)}
+/* Buttons */
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:10px 16px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text);font-size:13px;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:active{transform:scale(0.97);opacity:0.8}
+.btn-primary{background:var(--text);color:var(--bg);font-weight:500;border-color:var(--text);flex:1;justify-content:center}
+.btn-outline{border-color:var(--border2);color:var(--text2)}
+/* Loading */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:14px}
+.dots{display:flex;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--text3);animation:pulse 1.2s infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+.loading-text{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text3)}
+/* History */
+.history-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px}
+.hist-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.hist-title{flex:1;font-size:13px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hist-cat{font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;flex-shrink:0}
+.hist-date{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);flex-shrink:0}
+/* Settings */
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:0.5px solid var(--border)}
+.settings-row:last-child{border-bottom:none}
+.settings-label{font-size:14px;color:var(--text)}
+.settings-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.toggle{width:44px;height:24px;border-radius:99px;background:var(--bg4);border:0.5px solid var(--border2);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.toggle.on{background:var(--grc)}
+.thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--text3);transition:left .2s}
+.toggle.on .thumb{left:23px;background:#fff}
+.time-input{background:var(--bg3);border:0.5px solid var(--border2);color:var(--text);padding:7px 10px;border-radius:var(--radius-sm);font-family:'IBM Plex Mono',monospace;font-size:14px;width:100px;cursor:pointer}
+.time-input:focus{outline:none;border-color:var(--grc)}
+/* Error */
+.error{background:#1a0808;border:0.5px solid var(--pentest);border-radius:var(--radius-sm);padding:12px;color:var(--pentest-light);font-size:13px;margin-bottom:12px}
+/* Empty */
+.empty{text-align:center;padding:40px 20px;color:var(--text3);font-size:14px;line-height:1.6}
+/* Regen btn */
+.regen{background:var(--bg3);border:0.5px solid var(--border2);color:var(--text2);padding:7px 12px;border-radius:var(--radius-sm);font-size:12px;font-family:'IBM Plex Mono',monospace;cursor:pointer;display:flex;align-items:center;gap:5px}
+.regen:active{opacity:.7}
+/* Install banner */
+.install-banner{background:linear-gradient(135deg,#0d1a2e,#0a1a14);border:0.5px solid var(--grc);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.install-text{font-size:13px;color:var(--text);flex:1;line-height:1.4}
+.install-btn{background:var(--grc);color:#fff;border:none;border-radius:var(--radius-sm);padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.badge-learned{display:inline-flex;align-items:center;gap:5px;background:#0a1a10;border:0.5px solid var(--iam);border-radius:99px;padding:5px 12px;font-size:12px;color:var(--iam-light);margin-bottom:10px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">🔐</div>
+      <div>
+        <div class="logo-text">CyberAcademy</div>
+        <div class="logo-sub">daily learning terminal</div>
+      </div>
+    </div>
+    <div class="streak">
+      <span style="font-size:18px">🔥</span>
+      <span class="streak-num" id="streakNum">0</span>
+      <span class="streak-label">jours</span>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showView('learn')" id="navLearn">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Apprendre
+    </button>
+    <button class="nav-btn" onclick="showView('history')" id="navHistory">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+      Historique
+    </button>
+    <button class="nav-btn" onclick="showView('stats')" id="navStats">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Stats
+    </button>
+    <button class="nav-btn" onclick="showView('settings')" id="navSettings">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Rappels
+    </button>
+  </nav>
+
+  <!-- LEARN VIEW -->
+  <div class="scroll" id="viewLearn">
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-num" id="sTotal">0</div><div class="stat-label">Total</div></div>
+      <div class="stat"><div class="stat-num" style="color:var(--pentest-light)" id="sPentest">0</div><div class="stat-label">Pentest</div></div>
+      <div class="stat"><div class="stat-num" style="color:var(--iam-light)" id="sIAM">0</div><div class="stat-label">IAM</div></div>
+      <div class="stat"><div class="stat-num" style="color:var(--grc-light)" id="sGRC">0</div><div class="stat-label">GRC+Sys</div></div>
+    </div>
+
+    <div id="installBanner" style="display:none" class="install-banner">
+      <div class="install-text">📲 Installez l'app sur votre écran d'accueil pour l'utiliser hors-ligne !</div>
+      <button class="install-btn" onclick="promptInstall()">Installer</button>
+    </div>
+
+    <div class="cat-tabs">
+      <div class="cat-tab active" data-cat="Pentest" onclick="selectCat('Pentest')">
+        <div class="dot" style="background:var(--pentest)"></div>Pentest
+      </div>
+      <div class="cat-tab" data-cat="IAM" onclick="selectCat('IAM')">
+        <div class="dot" style="background:var(--iam)"></div>IAM
+      </div>
+      <div class="cat-tab" data-cat="GRC" onclick="selectCat('GRC')">
+        <div class="dot" style="background:var(--grc)"></div>GRC
+      </div>
+      <div class="cat-tab" data-cat="Système" onclick="selectCat('Système')">
+        <div class="dot" style="background:var(--sys)"></div>Système
+      </div>
+    </div>
+
+    <div class="card" id="mainCard">
+      <div class="card-header">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="cat-pill" id="catPill"></div>
+          <span class="date-str" id="dateStr"></span>
+        </div>
+        <button class="regen" onclick="generate()" id="regenBtn">↻ Nouveau</button>
+      </div>
+      <div id="conceptArea">
+        <div class="loading">
+          <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+          <div class="loading-text">Chargement...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY VIEW -->
+  <div class="scroll" id="viewHistory" style="display:none">
+    <div id="historyArea">
+      <div class="empty">Aucune notion apprise.<br>Commencez à explorer !</div>
+    </div>
+  </div>
+
+  <!-- STATS VIEW -->
+  <div class="scroll" id="viewStats" style="display:none">
+    <div class="card">
+      <div class="section-label" style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Progression par domaine</div>
+      <div id="progressBars"></div>
+    </div>
+    <div class="card">
+      <div class="section-label" style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Activité des 7 derniers jours</div>
+      <div id="weekActivity"></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS VIEW -->
+  <div class="scroll" id="viewSettings" style="display:none">
+    <div class="card">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;color:var(--text);margin-bottom:14px">🔔 Rappels quotidiens</div>
+
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">Notifications</div>
+          <div class="settings-sub" id="notifSub">Appuyez pour autoriser</div>
+        </div>
+        <div class="toggle" id="notifToggle" onclick="toggleNotif()"><div class="thumb"></div></div>
+      </div>
+
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">Rappel matin</div>
+          <div class="settings-sub">Session d'apprentissage</div>
+        </div>
+        <input type="time" class="time-input" id="timeMorning" value="09:00" onchange="saveSettings()">
+      </div>
+
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">Rappel soir</div>
+          <div class="settings-sub">Révision des notions</div>
+        </div>
+        <input type="time" class="time-input" id="timeEvening" value="18:00" onchange="saveSettings()">
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;color:var(--text);margin-bottom:14px">🎯 Catégories actives</div>
+      <div id="catToggles" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+
+    <div class="card">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;color:var(--text);margin-bottom:14px">⚙️ Données</div>
+      <div class="settings-row" style="border:none;padding:0">
+        <div>
+          <div class="settings-label">Version de l'app</div>
+          <div class="settings-sub">CyberAcademy PWA v1.0</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="testNotif()" style="width:100%;margin-bottom:10px;padding:14px;font-size:14px">🔔 Tester un rappel</button>
+    <div id="testMsg" style="text-align:center;font-size:12px;color:var(--text3);min-height:18px"></div>
+  </div>
+</div>
+
+<script>
+const API_KEY_PLACEHOLDER = 'YOUR_API_KEY'; // Remplacé à l'utilisation
+const CATS = {
+  Pentest:{color:'var(--pentest)',bg:'var(--pentest-bg)',light:'var(--pentest-light)',hex:'#E24B4A',bgHex:'#1a0a0a'},
+  IAM:{color:'var(--iam)',bg:'var(--iam-bg)',light:'var(--iam-light)',hex:'#1D9E75',bgHex:'#0a1a14'},
+  GRC:{color:'var(--grc)',bg:'var(--grc-bg)',light:'var(--grc-light)',hex:'#378ADD',bgHex:'#0a1020'},
+  Système:{color:'var(--sys)',bg:'var(--sys-bg)',light:'var(--sys-light)',hex:'#BA7517',bgHex:'#1a1200'}
+};
+
+let S = {
+  cat:'Pentest', history:[], streak:0, lastDate:null,
+  notifEnabled:false, timeMorning:'09:00', timeEvening:'18:00',
+  activeCats:['Pentest','IAM','GRC','Système'],
+  concept:null, apiKey:''
+};
+
+const DB_KEY = 'ca_state_v1';
+
+function load(){
+  try{const d=localStorage.getItem(DB_KEY);if(d)S={...S,...JSON.parse(d)};}catch(e){}
+  apply();
+}
+
+function save(){
+  try{localStorage.setItem(DB_KEY,JSON.stringify(S));}catch(e){}
+}
+
+function apply(){
+  document.getElementById('streakNum').textContent=S.streak||0;
+  document.getElementById('timeMorning').value=S.timeMorning||'09:00';
+  document.getElementById('timeEvening').value=S.timeEvening||'18:00';
+  updateStats();renderHistory();renderStats();renderCatToggles();checkNotif();
+}
+
+function updateStats(){
+  const h=S.history||[];
+  document.getElementById('sTotal').textContent=h.length;
+  document.getElementById('sPentest').textContent=h.filter(x=>x.cat==='Pentest').length;
+  document.getElementById('sIAM').textContent=h.filter(x=>x.cat==='IAM').length;
+  document.getElementById('sGRC').textContent=h.filter(x=>x.cat==='GRC'||x.cat==='Système').length;
+}
+
+function showView(v){
+  ['learn','history','stats','settings'].forEach(n=>{
+    document.getElementById('view'+n.charAt(0).toUpperCase()+n.slice(1)).style.display=n===v?'':'none';
+    document.getElementById('nav'+n.charAt(0).toUpperCase()+n.slice(1)).classList.toggle('active',n===v);
+  });
+  if(v==='history')renderHistory();
+  if(v==='stats')renderStats();
+}
+
+function selectCat(cat){
+  S.cat=cat;
+  document.querySelectorAll('.cat-tab').forEach(t=>{
+    t.classList.toggle('active',t.dataset.cat===cat);
+  });
+  generate();
+}
+
+function setPill(cat){
+  const p=document.getElementById('catPill');
+  const c=CATS[cat];
+  p.textContent=cat;
+  p.style.background=c.bgHex;
+  p.style.color=c.hex;
+  p.style.borderColor=c.hex+'60';
+}
+
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function code(s){return(s||'').replace(/&lt;code&gt;/g,'<code>').replace(/&lt;\/code&gt;/g,'</code>');}
+function prep(s){return code(esc(s));}
+
+async function generate(){
+  const cat=S.cat;
+  setPill(cat);
+  document.getElementById('dateStr').textContent=new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long'});
+  document.getElementById('regenBtn').disabled=true;
+  document.getElementById('conceptArea').innerHTML=`<div class="loading"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><div class="loading-text">Génération ${cat}...</div></div>`;
+
+  const sysPrompts={
+    Pentest:'Tu es un expert en pentesting, sécurité offensive, tests d\'intrusion, exploitation de vulnérabilités, CTF.',
+    IAM:'Tu es un expert en Identity and Access Management : OAuth2, SAML, OIDC, RBAC, PAM, Zero Trust, MFA, annuaires LDAP/AD.',
+    GRC:'Tu es un expert en Governance Risk Compliance : ISO 27001, NIST CSF, SOC2, RGPD, gestion des risques, audits, PSSI.',
+    Système:'Tu es un expert en administration systèmes Linux/Windows, hardening, sécurité OS, monitoring, SIEM, automatisation.'
+  };
+
+  const avoided = (S.history||[]).slice(0,10).map(x=>x.titre).join(', ');
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:`${sysPrompts[cat]} Génère UNE notion/concept avancé et varié dans le domaine ${cat}. Évite ces sujets déjà vus : ${avoided||'aucun'}. Réponds UNIQUEMENT en JSON valide sans markdown ni backticks:\n{"titre":"Nom court (max 5 mots)","description":"Explication 2-3 phrases avec termes techniques. Utilise <code>...</code> pour le code.","exemple":"Exemple concret ou commande 1-2 lignes. Utilise <code>...</code>.","pourquoi":"Importance critique en 1 phrase.","quiz_question":"Question QCM","quiz_options":["Bonne réponse","Mauvaise B","Mauvaise C","Mauvaise D"],"quiz_correct":0}`,
+        messages:[{role:'user',content:`Génère une notion ${cat} instructive et variée.`}]
+      })
+    });
+    const data=await resp.json();
+    const txt=data.content.map(i=>i.text||'').join('');
+    const c=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    S.concept={...c,cat};
+    renderConcept(c,cat);
+  }catch(e){
+    document.getElementById('conceptArea').innerHTML=`<div class="error">❌ Erreur de génération. Vérifiez votre connexion internet.</div><div class="btn-row"><button class="btn btn-primary" onclick="generate()">↻ Réessayer</button></div>`;
+  }
+  document.getElementById('regenBtn').disabled=false;
+}
+
+function renderConcept(c,cat){
+  document.getElementById('conceptArea').innerHTML=`
+    <div class="concept-title">${esc(c.titre)}</div>
+    <div class="concept-desc">${prep(c.description)}</div>
+    <hr class="divider">
+    <div class="section-grid">
+      <div class="section"><div class="section-label">Exemple</div><div class="section-text">${prep(c.exemple)}</div></div>
+      <div class="section"><div class="section-label">Importance</div><div class="section-text">${esc(c.pourquoi)}</div></div>
+    </div>
+    <div class="quiz">
+      <div class="quiz-q">🧠 ${esc(c.quiz_question)}</div>
+      <div class="quiz-opts">${c.quiz_options.map((o,i)=>`<button class="quiz-opt" onclick="answer(this,${i},${c.quiz_correct})">${esc(o)}</button>`).join('')}</div>
+    </div>
+    <div id="learnedBadge" style="display:none" class="badge-learned">✓ Notion apprise !</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="learnBtn" onclick="markLearned()">✓ Marquer comme appris</button>
+      <button class="btn btn-outline" onclick="generate()">→ Suivant</button>
+    </div>`;
+}
+
+function answer(btn,idx,correct){
+  document.querySelectorAll('.quiz-opt').forEach(b=>b.disabled=true);
+  if(idx===correct)btn.classList.add('correct');
+  else{btn.classList.add('wrong');document.querySelectorAll('.quiz-opt')[correct].classList.add('correct');}
+}
+
+function markLearned(){
+  if(!S.concept)return;
+  const today=new Date().toDateString();
+  const exists=(S.history||[]).find(h=>h.titre===S.concept.titre);
+  if(!exists){
+    S.history=[{titre:S.concept.titre,cat:S.concept.cat,date:today,ts:Date.now()},...(S.history||[])];
+    const yesterday=new Date(Date.now()-86400000).toDateString();
+    if(S.lastDate===today){}
+    else if(S.lastDate===yesterday)S.streak=(S.streak||0)+1;
+    else S.streak=1;
+    S.lastDate=today;
+    document.getElementById('streakNum').textContent=S.streak;
+    updateStats();save();
+  }
+  const badge=document.getElementById('learnedBadge');
+  const btn=document.getElementById('learnBtn');
+  if(badge)badge.style.display='inline-flex';
+  if(btn){btn.disabled=true;btn.textContent='✓ Appris !';}
+}
+
+function renderHistory(){
+  const a=document.getElementById('historyArea');
+  if(!a)return;
+  const h=S.history||[];
+  if(!h.length){a.innerHTML='<div class="empty">Aucune notion apprise.<br>Explorez les catégories !</div>';return;}
+  const groups={};
+  h.forEach(x=>{const d=x.date||'';if(!groups[d])groups[d]=[];groups[d].push(x);});
+  a.innerHTML=Object.keys(groups).map(d=>`
+    <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:8px 0 6px">${d}</div>
+    ${groups[d].map(x=>`<div class="history-item"><div class="hist-dot" style="background:${CATS[x.cat]?.hex||'#888'}"></div><div class="hist-title">${esc(x.titre)}</div><div class="hist-cat" style="color:${CATS[x.cat]?.hex||'#888'}">${esc(x.cat)}</div></div>`).join('')}
+  `).join('');
+}
+
+function renderStats(){
+  const h=S.history||[];
+  const p=document.getElementById('progressBars');
+  if(!p)return;
+  const total=h.length||1;
+  p.innerHTML=Object.keys(CATS).map(cat=>{
+    const n=h.filter(x=>x.cat===cat).length;
+    const pct=Math.round(n/total*100);
+    return`<div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+        <span style="font-size:13px;color:${CATS[cat].hex}">${cat}</span>
+        <span style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--text3)">${n} notion${n>1?'s':''}</span>
+      </div>
+      <div style="background:var(--bg3);border-radius:99px;height:5px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:${CATS[cat].hex};border-radius:99px;transition:width .5s"></div>
+      </div>
+    </div>`;
+  }).join('');
+  const w=document.getElementById('weekActivity');
+  if(!w)return;
+  const days=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+  const now=new Date();
+  const week=Array.from({length:7},(_,i)=>{
+    const d=new Date(now);d.setDate(d.getDate()-6+i);
+    const ds=d.toDateString();
+    const count=h.filter(x=>x.date===ds).length;
+    return{label:days[d.getDay()],count,today:i===6};
+  });
+  const max=Math.max(...week.map(x=>x.count),1);
+  w.innerHTML=`<div style="display:flex;align-items:flex-end;gap:6px;height:70px">${week.map(d=>`
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="width:100%;background:${d.count>0?(d.today?'var(--grc)':'var(--grc-light)'):'var(--bg3)'};border-radius:4px;height:${Math.max(d.count/max*50,d.count>0?8:3)}px;opacity:${d.today?1:0.7};transition:height .4s"></div>
+      <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:${d.today?'var(--text)':'var(--text3)'}">${d.label}</div>
+    </div>`).join('')}</div>`;
+}
+
+function renderCatToggles(){
+  const c=document.getElementById('catToggles');
+  if(!c)return;
+  c.innerHTML=Object.keys(CATS).map(cat=>`
+    <div class="settings-row" style="padding:8px 0">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:8px;height:8px;border-radius:50%;background:${CATS[cat].hex}"></div>
+        <span class="settings-label">${cat}</span>
+      </div>
+      <div class="toggle ${(S.activeCats||[]).includes(cat)?'on':''}" id="toggle${cat}" onclick="toggleCat('${cat}')"><div class="thumb"></div></div>
+    </div>`).join('');
+}
+
+function toggleCat(cat){
+  S.activeCats=S.activeCats||['Pentest','IAM','GRC','Système'];
+  const i=S.activeCats.indexOf(cat);
+  if(i>=0&&S.activeCats.length>1)S.activeCats.splice(i,1);
+  else if(i<0)S.activeCats.push(cat);
+  const t=document.getElementById('toggle'+cat);
+  if(t)t.className='toggle '+(S.activeCats.includes(cat)?'on':'');
+  save();
+}
+
+function saveSettings(){
+  S.timeMorning=document.getElementById('timeMorning').value;
+  S.timeEvening=document.getElementById('timeEvening').value;
+  save();startReminderCheck();
+}
+
+function checkNotif(){
+  const tog=document.getElementById('notifToggle');
+  const sub=document.getElementById('notifSub');
+  if(!('Notification'in window)){sub.textContent='Non supporté sur ce navigateur';return;}
+  if(Notification.permission==='granted'&&S.notifEnabled){
+    tog.classList.add('on');sub.textContent='Notifications activées ✓';
+    startReminderCheck();
+  }else if(Notification.permission==='denied'){
+    tog.classList.remove('on');sub.textContent='Accès refusé — modifiez les paramètres';
+  }else{
+    tog.classList.remove('on');sub.textContent='Appuyez pour autoriser';
+  }
+}
+
+async function toggleNotif(){
+  if(!('Notification'in window))return;
+  if(Notification.permission==='denied'){document.getElementById('notifSub').textContent='Accès refusé — paramètres navigateur';return;}
+  if(!S.notifEnabled||Notification.permission!=='granted'){
+    const p=await Notification.requestPermission();
+    if(p==='granted'){
+      S.notifEnabled=true;
+      document.getElementById('notifToggle').classList.add('on');
+      document.getElementById('notifSub').textContent='Notifications activées ✓';
+      startReminderCheck();save();
+      new Notification('CyberAcademy 🔐',{body:'Rappels activés ! À tout à l\'heure.',icon:'icons/icon-192.png'});
+    }else{document.getElementById('notifSub').textContent='Permission refusée';}
+  }else{
+    S.notifEnabled=false;
+    document.getElementById('notifToggle').classList.remove('on');
+    document.getElementById('notifSub').textContent='Notifications désactivées';
+    save();
+  }
+}
+
+let reminderTimer=null;
+function startReminderCheck(){
+  if(reminderTimer)clearInterval(reminderTimer);
+  if(!S.notifEnabled||Notification.permission!=='granted')return;
+  reminderTimer=setInterval(()=>{
+    const now=new Date();
+    const hm=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    if(hm===S.timeMorning)new Notification('📚 CyberAcademy — Apprentissage du jour',{body:'Votre session quotidienne vous attend !',icon:'icons/icon-192.png',tag:'morning'});
+    if(hm===S.timeEvening)new Notification('🧠 CyberAcademy — Révision du soir',{body:'Consolidez les notions apprises aujourd\'hui.',icon:'icons/icon-192.png',tag:'evening'});
+  },60000);
+}
+
+function testNotif(){
+  if(Notification.permission==='granted'){
+    new Notification('🔔 CyberAcademy — Test',{body:`Rappels configurés : ${S.timeMorning} et ${S.timeEvening}`,icon:'icons/icon-192.png'});
+    document.getElementById('testMsg').textContent='✓ Notification envoyée !';
+    setTimeout(()=>document.getElementById('testMsg').textContent='',3000);
+  }else{document.getElementById('testMsg').textContent='Activez d\'abord les notifications ci-dessus.';}
+}
+
+// PWA Install
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();deferredPrompt=e;
+  document.getElementById('installBanner').style.display='flex';
+});
+window.addEventListener('appinstalled',()=>{
+  document.getElementById('installBanner').style.display='none';
+  deferredPrompt=null;
+});
+function promptInstall(){
+  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;document.getElementById('installBanner').style.display='none';});}
+}
+
+// SW Registration
+if('serviceWorker'in navigator){
+  navigator.serviceWorker.register('sw.js').catch(e=>console.warn('SW:',e));
+}
+
+// Init
+load();
+setPill('Pentest');
+document.getElementById('dateStr').textContent=new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long'});
+generate();
+</script>
+</body>
+</html>
