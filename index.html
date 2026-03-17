@@ -142,12 +142,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'IBM Pl
   <div id="apiOverlay" class="overlay" style="display:none">
     <div class="setup-card">
       <div class="setup-title">🔐 Configuration</div>
-      <div class="setup-sub">CyberAcademy utilise l'IA Claude pour générer vos notions. Une clé API Anthropic est nécessaire.</div>
-      <div class="setup-label">Votre clé API Anthropic</div>
-      <input class="setup-input" type="password" id="apiInput" placeholder="sk-ant-api03-..." autocomplete="off" autocorrect="off" spellcheck="false">
+      <div class="setup-sub">CyberAcademy utilise OpenRouter pour générer vos notions avec une IA gratuite. Une clé API OpenRouter est nécessaire.</div>
+      <div class="setup-label">Votre clé API OpenRouter</div>
+      <input class="setup-input" type="password" id="apiInput" placeholder="sk-or-v1-..." autocomplete="off" autocorrect="off" spellcheck="false">
       <div class="setup-hint">
-        Obtenez votre clé gratuite sur <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a><br>
-        → API Keys → Create Key<br>
+        Obtenez votre clé <strong>gratuite</strong> sur <a href="https://openrouter.ai" target="_blank">openrouter.ai</a><br>
+        → Sign Up → API Keys → Create Key<br>
+        🎁 Crédits gratuits offerts à l'inscription !<br>
         🔒 La clé est stockée uniquement sur votre appareil.
       </div>
       <div class="setup-err" id="apiErr">❌ Clé invalide. Vérifiez et réessayez.</div>
@@ -331,7 +332,7 @@ const DB_KEY = 'ca_state_v1';
 function showAPISetup(){document.getElementById('apiOverlay').style.display='flex';}
 function saveAPIKey(){
   const k=document.getElementById('apiInput').value.trim();
-  if(!k.startsWith('sk-ant-')){document.getElementById('apiErr').style.display='block';return;}
+  if(!k.startsWith('sk-or-')){document.getElementById('apiErr').style.display='block';return;}
   S.apiKey=k;save();
   document.getElementById('apiOverlay').style.display='none';
   generate();
@@ -408,19 +409,26 @@ async function generate(){
   const avoided = (S.history||[]).slice(0,10).map(x=>x.titre).join(', ');
 
   try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    const resp=await fetch('https://openrouter.ai/api/v1/chat/completions',{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':S.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':'Bearer '+S.apiKey,
+        'HTTP-Referer':'https://felline23.github.io/cyberacademy',
+        'X-Title':'CyberAcademy'
+      },
       body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
+        model:'meta-llama/llama-3.3-70b-instruct:free',
         max_tokens:1000,
-        system:`${sysPrompts[cat]} Génère UNE notion/concept avancé et varié dans le domaine ${cat}. Évite ces sujets déjà vus : ${avoided||'aucun'}. Réponds UNIQUEMENT en JSON valide sans markdown ni backticks:\n{"titre":"Nom court (max 5 mots)","description":"Explication 2-3 phrases avec termes techniques. Utilise <code>...</code> pour le code.","exemple":"Exemple concret ou commande 1-2 lignes. Utilise <code>...</code>.","pourquoi":"Importance critique en 1 phrase.","quiz_question":"Question QCM","quiz_options":["Bonne réponse","Mauvaise B","Mauvaise C","Mauvaise D"],"quiz_correct":0}`,
-        messages:[{role:'user',content:`Génère une notion ${cat} instructive et variée.`}]
+        messages:[
+          {role:'system',content:`${sysPrompts[cat]} Génère UNE notion/concept avancé et varié dans le domaine ${cat}. Évite ces sujets déjà vus : ${avoided||'aucun'}. Réponds UNIQUEMENT en JSON valide sans markdown ni backticks:\n{"titre":"Nom court (max 5 mots)","description":"Explication 2-3 phrases avec termes techniques. Utilise <code>...</code> pour le code.","exemple":"Exemple concret ou commande 1-2 lignes. Utilise <code>...</code>.","pourquoi":"Importance critique en 1 phrase.","quiz_question":"Question QCM","quiz_options":["Bonne réponse","Mauvaise B","Mauvaise C","Mauvaise D"],"quiz_correct":0}`},
+          {role:'user',content:`Génère une notion ${cat} instructive et variée.`}
+        ]
       })
     });
     const data=await resp.json();
     if(data.error){throw new Error('API: '+data.error.message);}
-    const txt=data.content.map(i=>i.text||'').join('');
+    const txt=data.choices[0].message.content;
     const c=JSON.parse(txt.replace(/```json|```/g,'').trim());
     S.concept={...c,cat};
     renderConcept(c,cat);
